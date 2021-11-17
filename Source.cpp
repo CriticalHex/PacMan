@@ -1,5 +1,6 @@
 #include<iostream>
 #include<SFML\Graphics.hpp>
+using namespace std;
 
 enum DIRECTIONS { LEFT, RIGHT, UP, DOWN }; //left is 0, right is 1, up is 2, down is 3
 
@@ -16,6 +17,14 @@ int main() {
     sf::Sprite wall;
     wall.setTexture(brick);
 
+    sf::Texture pacman;
+    pacman.loadFromFile("pac.png");
+    sf::IntRect pac(0, 0, 50, 50);
+    sf::Sprite playerImg(pacman, pac);
+    int ticker = 0;
+    int frameNum = 0;
+    int rowNum = 0;
+
     int map[20][20] = {
         1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
         1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
@@ -25,11 +34,11 @@ int main() {
         1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,0,1,
         1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1,
         1,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1,1,
-        0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,
+        9,9,9,1,0,1,0,0,0,0,0,0,0,1,0,1,9,9,9,9,
         1,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1,1,
-        0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,1,
+        0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,
         1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,
-        0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,
+        9,9,9,1,0,1,0,0,0,0,0,0,0,1,0,1,9,9,9,9,
         1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,
         1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
         1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,0,1,
@@ -39,14 +48,15 @@ int main() {
         1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
     };
 
-    int xpos = 8*52;
-    int ypos = 20*45+4;
+    int xpos = 10 * 50;
+    int ypos = 18 * 50;
     int vx = 0;
     int vy = 0;
-    sf::CircleShape player(20);
-    player.setFillColor(sf::Color(250, 250, 0)); //using RGB value for color here (hex also works)
-    player.setPosition(xpos, ypos); //top left "corner" of circle (not center!)
+    int radius = 25;
     bool keys[] = { false, false, false, false };
+
+    sf::CircleShape dot(5);
+    dot.setFillColor(sf::Color::White);
 
     //################### HOLD ONTO YOUR BUTTS, ITS THE GAME LOOP###############################################################
     while (screen.isOpen()) {//keep window open until user shuts it down
@@ -79,25 +89,80 @@ int main() {
 
         }//end event loop---------------------------------------------------------------
 
-        if (keys[LEFT] == true)
+        if (keys[LEFT] == true) {
+            rowNum = 3;
             vx = -5;
+        }
 
-        else if (keys[RIGHT] == true)
+        else if (keys[RIGHT] == true) {
+            rowNum = 1;
             vx = 5;
+        }
 
-        else vx = 0;
+        //else vx = 0;
 
-        if (keys[UP] == true)
+        if (keys[UP] == true) {
+            rowNum = 0;
             vy = -5;
+        }
 
-        else if (keys[DOWN] == true)
+        else if (keys[DOWN] == true) {
+            rowNum = 2;
             vy = 5;
+        }
 
-        else vy = 0;
+        //else vy = 0;
+
+        ////less working
+        ////right
+        //if (vx > 0 && (map[(ypos + 3) / 50][(xpos + radius * 2 + 3) / 50] != 1 || map[(ypos + radius * 2 - 3) / 50][(xpos + radius * 2 + 3) / 50] != 1))
+        //    xpos += vx;
+
+        ////left
+        //if (vx < 0 && (map[(ypos + 3) / 50][(xpos - 3) / 50] != 1 || map[(ypos + radius * 2 - 3) / 50][(xpos - 3) / 50] != 1))
+        //    xpos += vx;
+
+        ////down, so positive
+        //if (vy > 0 && (map[(ypos + radius * 2 + 3) / 50][(xpos + 3) / 50] != 1 || map[(ypos + radius * 2 + 3) / 50][(xpos + radius * 2 - 3) / 50] != 1))
+        //    ypos += vy;
+
+        ////up, so negative
+        //if (vy < 0 && (map[(ypos - 3) / 50][(xpos + radius * 2 - 3) / 50] != 1 || map[(ypos - 3) / 50][(xpos + 3) / 50] != 1))
+        //    ypos += vy;
+
+        //more working
+        //right
+        if (vx > 0 && (map[(ypos + 3) / 50][(xpos + radius * 2 + 3) / 50] == 1 || map[(ypos + radius * 2 - 3) / 50][(xpos + radius * 2 + 3) / 50] == 1))
+            vx = 0;
+
+        //left
+        if (vx < 0 && (map[(ypos + 3) / 50][(xpos - 3) / 50] == 1 || map[(ypos + radius * 2 - 3) / 50][(xpos - 3) / 50] == 1))
+            vx = 0;
+
+        //down, so positive
+        if (vy > 0 && (map[(ypos + radius * 2 + 3) / 50][(xpos + 3) / 50] == 1 || map[(ypos + radius * 2 + 3) / 50][(xpos + radius * 2 - 3) / 50] == 1))
+            vy = 0;
+
+        //up, so negative
+        if (vy < 0 && (map[(ypos - 3) / 50][(xpos + radius * 2 - 3) / 50] == 1 || map[(ypos - 3) / 50][(xpos + 3) / 50] == 1))
+            vy = 0;
 
         xpos += vx;
         ypos += vy;
-        player.setPosition(xpos, ypos);
+
+        if (vx != 0 || vy != 0) {
+            ticker += 1; 
+            if (ticker % 10 == 0)
+                frameNum += 1; 
+            if (frameNum > 3) 
+                frameNum = 0;
+        }
+        pac = sf::IntRect(frameNum * 50, rowNum * 50, 50, 50); 
+        sf::Sprite playerImg(pacman, pac); 
+        playerImg.setPosition(xpos, ypos);
+
+        if (map[(ypos + 25)/50][(xpos + 25)/50] == 0)
+            map[ypos/50][xpos/50] = -1;
 
                 //render section-----------------------------------------
         screen.clear(); //wipes screen, without this things smear
@@ -109,9 +174,13 @@ int main() {
                     wall.setPosition(cols * 50, rows * 50);
                     screen.draw(wall);
                 }
+                if (map[rows][cols] == 0) {
+                    dot.setPosition(cols * 50 + 20, rows * 50 + 20);
+                    screen.draw(dot);
+                }
             }
 
-        screen.draw(player);
+        screen.draw(playerImg);
 
         screen.display(); //flips memory drawings onto screen
 
