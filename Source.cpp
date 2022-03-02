@@ -1,8 +1,24 @@
 #include<iostream>
 #include<SFML\Graphics.hpp>
+#include<SFML\Audio.hpp>
 using namespace std;
 
 enum DIRECTIONS { LEFT, RIGHT, UP, DOWN }; //left is 0, right is 1, up is 2, down is 3
+
+//class Ghost
+//{
+//public:
+//    Ghost(int x, int y, int radius, int whichGhost);
+//    sf::Texture ghostCreate();
+//
+//private:
+//    int xPos;
+//    int yPos;
+//    int whichGhost;
+//    int Width;
+//    int isDead;
+//
+//};
 
 int main() {
     sf::RenderWindow screen(sf::VideoMode(1000, 1000), "PacMan"); //set up screen
@@ -10,6 +26,12 @@ int main() {
     sf::Clock clock; //set up the clock (needed for game timing)
     const float FPS = 60.0f; //FPS
     screen.setFramerateLimit(FPS); //set FPS
+
+    sf::Music music;
+    if (!music.openFromFile("sound.wav"))
+        return -1; // error
+    music.play();
+    music.setLoop(true);
 
     //load in images
     sf::Texture brick;
@@ -37,7 +59,7 @@ int main() {
         9,9,9,1,0,1,0,0,0,0,0,0,0,1,0,1,9,9,9,9,
         1,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,1,1,
         0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,
-        1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,
+        2,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,
         9,9,9,1,0,1,0,0,0,0,0,0,0,1,0,1,9,9,9,9,
         1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,
         1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,
@@ -140,23 +162,32 @@ int main() {
             vx = 0;
 
         //down, so positive
-        if (vy > 0 && (map[(ypos + radius * 2 + 3) / 50][(xpos + 3) / 50] == 1 || map[(ypos + radius * 2 + 3) / 50][(xpos + radius * 2 - 3) / 50] == 1))
+        if (vy > 0 && (map[(ypos + radius * 2 + 3) / 50][(xpos + 3) / 50] > 0 || map[(ypos + radius * 2 + 3) / 50][(xpos + radius * 2 - 3) / 50] > 0))
             vy = 0;
 
         //up, so negative
         if (vy < 0 && (map[(ypos - 3) / 50][(xpos + radius * 2 - 3) / 50] == 1 || map[(ypos - 3) / 50][(xpos + 3) / 50] == 1))
             vy = 0;
 
+        if (xpos + 25 >= 1000)
+            xpos = -25;
+        else if (xpos <= -25)
+            xpos = 975;
+
         xpos += vx;
         ypos += vy;
+        
 
         if (vx != 0 || vy != 0) {
+            music.setVolume(100.f);
             ticker += 1; 
-            if (ticker % 10 == 0)
+            if (ticker % 3 == 0)
                 frameNum += 1; 
             if (frameNum > 3) 
                 frameNum = 0;
         }
+        else
+            music.setVolume(0.f);
         pac = sf::IntRect(frameNum * 50, rowNum * 50, 50, 50); 
         sf::Sprite playerImg(pacman, pac); 
         playerImg.setPosition(xpos, ypos);
@@ -170,7 +201,7 @@ int main() {
 
         for (int rows = 0; rows < 20; rows++)
             for (int cols = 0; cols < 20; cols++) {
-                if (map[rows][cols] == 1) {
+                if (map[rows][cols] == 1 || map[rows][cols] == 2) {
                     wall.setPosition(cols * 50, rows * 50);
                     screen.draw(wall);
                 }
@@ -188,3 +219,40 @@ int main() {
 
     std::cout << "goodbye!" << std::endl;
 } //end of main
+
+//Ghost::Ghost(int x, int y, int radius, int whichGhost) { //wow, constructor!
+//    xPos = x;
+//    yPos = y;
+//    Width = radius + 3;
+//    whichGhost = whichGhost;
+//    isDead = false;
+//}
+//
+//sf::Texture Ghost::ghostCreate() { //ghost generation function, see that function type?
+//    sf::Texture ghost;
+//    ghost.loadFromFile("ghost.png");
+//    sf::IntRect ghost(0, 0, 50, 50);
+//    sf::Sprite ghostImg(pacman, pac);
+//    int ticker = 0;
+//    int frameNum = 0;
+//    int rowNum = 0;
+//    platform.setFillColor(colorCode);
+//    platform.setPosition(xPos, yPos);
+//    return platform;
+//}
+//
+//bool Platforms::ballCollision(int bx, int by) {
+//    if ((bx >= xPos) && (bx <= xPos + 100) && (by < yPos + 50) && (by + 10 > yPos)) {
+//        return true;
+//    }
+//    else
+//        return false;
+//}
+//
+//void Platforms::kill() {
+//    isDead = true;
+//}
+//
+//bool Platforms::checkDead() {
+//    return isDead;
+//}
